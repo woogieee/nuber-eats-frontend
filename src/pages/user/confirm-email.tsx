@@ -4,7 +4,7 @@ import {
   VerifyEmailMutationVariables,
 } from "../../__generated__/graphql";
 import { useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useHistory, useLocation } from "react-router-dom";
 import { useMe } from "../../hooks/useMe";
 
 const VERIFY_EMAIL_MUTATION = gql`
@@ -19,11 +19,13 @@ const VERIFY_EMAIL_MUTATION = gql`
 export const ConfirmEmail = () => {
   const { data: userData } = useMe();
   const client = useApolloClient();
+  const history = useHistory();
   const onCompleted = (data: VerifyEmailMutation) => {
     const {
       verifyEmail: { ok },
     } = data;
     if (ok && userData?.me.id) {
+      console.log("이제 들어가니?");
       // cache에 write 하기
       client.writeFragment({
         id: `User:${userData.me.id}`,
@@ -36,6 +38,7 @@ export const ConfirmEmail = () => {
           verified: true,
         },
       });
+      history.push("/");
     }
   };
   const [verifyEmail] = useMutation<

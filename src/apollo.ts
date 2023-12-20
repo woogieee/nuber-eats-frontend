@@ -27,6 +27,7 @@ const authLink = setContext((_, { headers }) => {
 export const client = new ApolloClient({
   name: "nuber-eats-backend",
   link: authLink.concat(httpLink),
+  connectToDevTools: true,
   cache: new InMemoryCache({
     typePolicies: {
       Query: {
