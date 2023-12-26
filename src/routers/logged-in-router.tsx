@@ -1,15 +1,12 @@
-import {
-  Redirect,
-  Route,
-  BrowserRouter as Router,
-  Switch,
-} from "react-router-dom";
+import { Route, BrowserRouter as Router, Switch } from "react-router-dom";
 import { Restaurants } from "../pages/client/restaurants";
 import { Header } from "../components/header";
 import { useMe } from "../hooks/useMe";
 import { NotFound } from "../pages/404";
 import { ConfirmEmail } from "../pages/user/confirm-email";
 import { EditProfile } from "../pages/user/edit-profile";
+import { Search } from "../pages/client/search";
+import { Category } from "../pages/client/category";
 
 // Client Router
 // fragment - parent 없이 많은 element를 동시에 return 할 수 있음
@@ -17,11 +14,17 @@ const ClientRoutes = [
   <Route key={1} path="/" exact>
     <Restaurants />
   </Route>,
-  <Route key={2} path="/confirm" exact>
+  <Route key={2} path="/confirm">
     <ConfirmEmail />
   </Route>,
-  <Route key={3} path="/edit-profile" exact>
+  <Route key={3} path="/edit-profile">
     <EditProfile />
+  </Route>,
+  <Route key={4} path="/search">
+    <Search />
+  </Route>,
+  <Route key={5} path="/category/:slug">
+    <Category />
   </Route>,
 ];
 
@@ -40,7 +43,6 @@ export const LoggedInRouter = () => {
       <Header />
       <Switch>
         {data.me.role === "Client" && ClientRoutes}
-        {/* <Redirect key="default" to="/" /> */}
         <Route>
           <NotFound />
         </Route>

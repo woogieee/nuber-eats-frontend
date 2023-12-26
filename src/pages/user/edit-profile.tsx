@@ -6,7 +6,7 @@ import {
   EditProfileMutation,
   EditProfileMutationVariables,
 } from "../../__generated__/graphql";
-import { Helmet } from "react-helmet";
+import { Helmet } from "react-helmet-async";
 
 const EDIT_PROFILE_MUTATION = gql`
   mutation editProfile($input: EditProfileInput!) {
