@@ -1,44 +1,60 @@
+import { render, screen, waitFor } from "@testing-library/react";
+import { Login } from "../login";
 import { ApolloProvider } from "@apollo/client";
 import { createMockClient } from "mock-apollo-client";
-import { render, RenderResult, waitFor } from "@testing-library/react";
-import React from "react";
-import { Login } from "../login";
 import { HelmetProvider } from "react-helmet-async";
 import { BrowserRouter as Router } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 
 describe("<Login />", () => {
-  let renderResult: RenderResult;
-  beforeEach(async () => {
-    await waitFor(async () => {
-      const mockedClient = createMockClient();
-      renderResult = render(
-        <HelmetProvider>
-          <Router>
-            <ApolloProvider client={mockedClient}>
-              <Login />
-            </ApolloProvider>
-          </Router>
-        </HelmetProvider>
-      );
-    });
+  beforeEach(() => {
+    // graphql에서 클라이언트가 필요하기 때문에 생성
+    const mockedClient = createMockClient();
+    render(
+      <HelmetProvider>
+        <Router>
+          <ApolloProvider client={mockedClient}>
+            <Login />
+          </ApolloProvider>
+        </Router>
+      </HelmetProvider>
+    );
   });
+
   it("should render OK", async () => {
     await waitFor(() => {
       expect(document.title).toBe("Login | Nuber Eats");
     });
   });
+
+  // 이메일
   it("displays email validation errors", async () => {
-    const { getByPlaceholderText, debug, getByRole } = renderResult;
-    const email = getByPlaceholderText(/email/i);
+    const email = screen.getByPlaceholderText(/email/i);
+    userEvent.type(email, "this@wont");
+
     await waitFor(() => {
-      userEvent.type(email, "this@wont");
+      const errorMessage = screen.getByRole("alert");
+      expect(errorMessage).toHaveTextContent(/please enter a valid email/i);
     });
-    let errorMessage = getByRole("alert");
-    expect(errorMessage).toHaveTextContent(/please enter a valid email/i);
+    userEvent.clear(email);
+
     await waitFor(() => {
-      userEvent.clear(email);
+      const errorMessage = screen.getByRole("alert");
+      expect(errorMessage).toHaveTextContent(/email is required/i);
     });
-    debug();
+  });
+
+  // 비밀번호
+  it("display password required errors", async () => {
+    const email = screen.getByPlaceholderText(/email/i);
+    userEvent.type(email, "test01@test.com");
+
+    await waitFor(() => {
+      const submitBtn = screen.getByRole("button");
+      expect(submitBtn).toHaveTextContent("Log in");
+    });
+    userEvent.click(submitBtn);
+
+    screen.debug();
   });
 });

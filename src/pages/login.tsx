@@ -87,16 +87,19 @@ export const Login = () => {
           <input
             {...register("email", {
               required: "Email is required",
-              pattern:
-                /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+              pattern: {
+                value:
+                  /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/,
+                message: "please enter a valid email",
+              },
             })}
             type="email"
             placeholder="Email"
             className="input"
           />
-          {errors.email?.type === "pattern" && (
+          {/* {errors.email?.type === "pattern" && (
             <FormError errorMessage={"please enter a valid email"} />
-          )}
+          )} */}
           {errors.email?.message && (
             <FormError errorMessage={errors.email?.message} />
           )}
