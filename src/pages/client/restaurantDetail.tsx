@@ -4,6 +4,7 @@ import {
   RestaurantQuery,
   RestaurantQueryVariables,
 } from "../../__generated__/graphql";
+import { Helmet } from "react-helmet-async";
 
 const RESTAURANT_QUERY = gql`
   query restaurant($input: RestaurantInput!) {
@@ -43,7 +44,9 @@ export const Restaurant = () => {
   console.log(data);
   return (
     <div>
-      {/* header */}
+      <Helmet>
+        <title>{data?.restaurant.restaurant?.name || ""} | Nuber Eats</title>
+      </Helmet>
       <div
         className="bg-gray-800 bg-center bg-cover py-48"
         style={{

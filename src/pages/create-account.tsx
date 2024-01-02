@@ -13,7 +13,7 @@ import { Helmet } from "react-helmet-async";
 
 // mutation 이름은 backend로 넘어가지 않고
 // frontend에서만 사용된다.
-const CREATE_ACCOUNT_MUTATION = gql`
+export const CREATE_ACCOUNT_MUTATION = gql`
   mutation createAccount($createAccountInput: CreateAccountInput!) {
     createAccount(input: $createAccountInput) {
       ok

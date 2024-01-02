@@ -9,7 +9,7 @@ import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { Restaurant } from "../../components/restaurant";
 
-const CATEGORY_QUERY = gql`
+export const CATEGORY_QUERY = gql`
   query category($input: CategoryInput!) {
     category(input: $input) {
       ok

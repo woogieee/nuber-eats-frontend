@@ -14,7 +14,7 @@ import { LOCALSTORAGE_TOKEN } from "../constants";
 
 // mutation 이름은 backend로 넘어가지 않고
 // frontend에서만 사용된다.
-const LOGIN_MUTATION = gql`
+export const LOGIN_MUTATION = gql`
   mutation login($loginInput: LoginInput!) {
     login(input: $loginInput) {
       ok
