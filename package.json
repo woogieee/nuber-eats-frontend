@@ -60,6 +60,7 @@
     ]
   },
   "devDependencies": {
+    "@testing-library/cypress": "^10.0.1",
     "@types/react-helmet": "^6.1.11",
     "mock-apollo-client": "^1.2.1"
   },

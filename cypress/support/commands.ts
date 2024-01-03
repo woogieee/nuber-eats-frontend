@@ -35,3 +35,43 @@
 //     }
 //   }
 // }
+import "@testing-library/cypress/add-commands";
+
+declare global {
+  namespace Cypress {
+    interface Chainable {
+      assertLoggedIn(): void;
+      assertLoggedOut(): void;
+      login(email: string, password: string): void;
+      assertTitle(title: string): void;
+    }
+  }
+}
+
+// 로그인 토큰 발급
+Cypress.Commands.add("assertLoggedIn", () => {
+  cy.window().its("localStorage.nuber-token").should("be.a", "string");
+});
+
+// 로그아웃 토큰 제거
+Cypress.Commands.add("assertLoggedOut", () => {
+  cy.window().its("localStorage.nuber-token").should("be.undefined");
+});
+
+// 로그인
+Cypress.Commands.add("login", (email, password) => {
+  cy.visit("/");
+  cy.assertLoggedOut();
+  cy.title().should("eq", "Login | Nuber Eats");
+  cy.findByPlaceholderText(/email/i).type(email);
+  cy.findByPlaceholderText(/password/i).type(password);
+  cy.findByRole("button")
+    .should("not.have.class", "pointer-events-none")
+    .click();
+  cy.assertLoggedIn();
+});
+
+// 타이틀 확인
+Cypress.Commands.add("assertTitle", (title) => {
+  cy.title().should("eq", `${title} | Nuber Eats`);
+});

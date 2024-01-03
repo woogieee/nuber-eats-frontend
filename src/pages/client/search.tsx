@@ -47,7 +47,7 @@ interface IFormProps {
 
 export const Search = () => {
   const [page, setPage] = useState(1);
-  const { register, handleSubmit, getValues } = useForm<IFormProps>();
+  const { register, handleSubmit, getValues, setValue } = useForm<IFormProps>();
 
   const onSearchSubmit = () => {
     const { searchTerm } = getValues();
@@ -72,6 +72,7 @@ export const Search = () => {
       // replace는 push와 다르게 기록이 남지않음
       return history.replace("/");
     }
+    setValue("searchTerm", query); // 검색어 저장
     callQuery({
       variables: {
         input: {
@@ -80,7 +81,7 @@ export const Search = () => {
         },
       },
     });
-  }, [history, location, callQuery, page]);
+  }, [history, location, callQuery, page, setValue]);
 
   // page button
   const onNextPageClick = () => {
