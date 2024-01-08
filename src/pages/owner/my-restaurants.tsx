@@ -1,9 +1,8 @@
-import { gql, useApolloClient, useQuery } from "@apollo/client";
+import { gql, useQuery } from "@apollo/client";
 import { MyRestaurantsQuery } from "../../__generated__/graphql";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 import { Restaurant } from "../../components/restaurant";
-import { useEffect } from "react";
 
 export const MY_RESTAURANTS_QUERY = gql`
   query myRestaurants {
@@ -26,26 +25,6 @@ export const MY_RESTAURANTS_QUERY = gql`
 
 export const MyRestaurants = () => {
   const { data } = useQuery<MyRestaurantsQuery>(MY_RESTAURANTS_QUERY);
-  const client = useApolloClient();
-  useEffect(() => {
-    setTimeout(() => {
-      const queryResult = client.readQuery({ query: MY_RESTAURANTS_QUERY }); // cache에서 읽음, api로 보내지 않음
-      console.log(queryResult);
-      client.writeQuery({
-        query: MY_RESTAURANTS_QUERY,
-        data: {
-          myRestaurants: {
-            // 원래 있던 쿼리를 무조건 다시 넣어야됨.
-            ...queryResult.myRestaurants,
-            restaurants: [
-              { name: "fake guy" },
-              ...queryResult.myRestaurants.restaurant,
-            ],
-          },
-        },
-      });
-    }, 2000);
-  }, []);
   return (
     <div>
       <Helmet>

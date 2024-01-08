@@ -10,47 +10,27 @@ import { Category } from "../pages/client/category";
 import { Restaurant } from "../pages/client/restaurantDetail";
 import { MyRestaurants } from "../pages/owner/my-restaurants";
 import { AddRestaurant } from "../pages/owner/add-restaurants";
+import { MyRestaurant } from "../pages/owner/my-restaurant";
+import { AddDish } from "../pages/owner/add-dish";
 
 // client Router
 const clientRoutes = [
-  {
-    path: "/",
-    component: <Restaurants />,
-  },
-  {
-    path: "/search",
-    component: <Search />,
-  },
-  {
-    path: "/category/:slug",
-    component: <Category />,
-  },
-  {
-    path: "/restaurant/:id",
-    component: <Restaurant />,
-  },
+  { path: "/", component: <Restaurants /> },
+  { path: "/search", component: <Search /> },
+  { path: "/category/:slug", component: <Category /> },
+  { path: "/restaurant/:id", component: <Restaurant /> },
 ];
 // common Router
 const commonRoutes = [
-  {
-    path: "/confirm",
-    component: <ConfirmEmail />,
-  },
-  {
-    path: "/edit-profile",
-    component: <EditProfile />,
-  },
+  { path: "/confirm", component: <ConfirmEmail /> },
+  { path: "/edit-profile", component: <EditProfile /> },
 ];
 // Owner Router
 const restaurantRoutes = [
-  {
-    path: "/",
-    component: <MyRestaurants />,
-  },
-  {
-    path: "/add-restaurant",
-    component: <AddRestaurant />,
-  },
+  { path: "/", component: <MyRestaurants /> },
+  { path: "/add-restaurant", component: <AddRestaurant /> },
+  { path: "/restaurant/:id", component: <MyRestaurant /> },
+  { path: "/restaurant/:restaurantId/add-dish", component: <AddDish /> },
 ];
 
 export const LoggedInRouter = () => {
