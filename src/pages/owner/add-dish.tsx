@@ -8,6 +8,7 @@ import {
   CreateDishMutation,
   CreateDishMutationVariables,
 } from "../../__generated__/graphql";
+import { useState } from "react";
 
 const CREATE_DISH_MUTATION = gql`
   mutation createDish($input: CreateDishInput!) {
@@ -26,11 +27,15 @@ interface IForm {
   name: string;
   price: string;
   description: string;
+  // 추가로 다른값을 받게해줌
+  [key: string]: string;
+  file: FileList;
 }
 
 export const AddDish = () => {
   const { restaurantId } = useParams<IParams>();
   const history = useHistory();
+  const [imageUrl, setImageUrl] = useState("");
   const [createDishMutation, { loading }] = useMutation<
     CreateDishMutation,
     CreateDishMutationVariables
@@ -46,24 +51,68 @@ export const AddDish = () => {
       },
     ],
   });
-  const { register, handleSubmit, formState, getValues } = useForm<IForm>({
-    // 특정 input 값이 변경될 때마다 실시간으로 form에서 validate 해줌
-    mode: "onChange",
-  });
-  const onSubmit = () => {
-    const { name, price, description } = getValues();
-    createDishMutation({
-      variables: {
-        input: {
-          name,
-          price: +price,
-          description,
-          restaurantId: +restaurantId,
-        },
-      },
+
+  const { register, handleSubmit, formState, getValues, setValue } =
+    useForm<IForm>({
+      // 특정 input 값이 변경될 때마다 실시간으로 form에서 validate 해줌
+      mode: "onChange",
     });
-    history.goBack();
+
+  const [uploading, setUploading] = useState(false);
+
+  const onSubmit = async () => {
+    try {
+      setUploading(true);
+      const { name, price, description, file, ...rest } = getValues();
+      const actualFile = file[0];
+      // FormData 생성
+      const formBody = new FormData();
+      formBody.append("file", actualFile);
+      // 파일 업로드
+      const { url: photo } = await (
+        await fetch("http://localhost:4000/uploads/", {
+          method: "POST",
+          body: formBody,
+        })
+      ).json();
+      setImageUrl(photo);
+      const optionObjects = optionsNumber.map((theId) => ({
+        name: rest[`${theId}-optionName`],
+        extra: +rest[`${theId}-optionExtra`],
+      }));
+      createDishMutation({
+        variables: {
+          input: {
+            name,
+            price: +price,
+            description,
+            restaurantId: +restaurantId,
+            options: optionObjects,
+            photo,
+          },
+        },
+      });
+      console.log(getValues());
+      // history.goBack();
+    } catch (e) {
+      console.log(getValues());
+    }
   };
+
+  const [optionsNumber, setOptionsNumber] = useState<number[]>([]);
+  // 옵션 추가 버튼
+  const onAddOptionClick = () => {
+    setOptionsNumber((current) => [Date.now(), ...current]);
+  };
+  // 옵션 삭제버튼
+  const onDeleteClick = (idToDelete: number) => {
+    // option input을 사라지게 함
+    // filter 조건: id는 삭제하려는 id와 달라야 함.
+    setOptionsNumber((current) => current.filter((id) => id !== idToDelete));
+    setValue(`${idToDelete}-optionName`, "");
+    setValue(`${idToDelete}-optionExtra`, "");
+  };
+
   return (
     <div className="container flex flex-col items-center mt-52">
       <Helmet>
@@ -94,8 +143,48 @@ export const AddDish = () => {
           placeholder="Description"
           {...register("description", { required: "description is required." })}
         />
+        <div>
+          <input
+            type="file"
+            accept="image/*"
+            {...register("file", { required: true })}
+          />
+        </div>
+        <div className=" my-10">
+          <h4 className=" font-medium mb-3 text-lg">Dish Options</h4>
+          <span
+            onClick={onAddOptionClick}
+            className="cursor-pointer text-white bg-gray-900 py-1 px-2 mt-5"
+          >
+            Add Dish Option
+          </span>
+          {optionsNumber.length !== 0 &&
+            optionsNumber.map((id) => (
+              <div key={id} className=" mt-5">
+                <input
+                  {...register(`${id}-optionName`)}
+                  className="py-2 px-4 focus:outline-none mr-3 focus:border-gray-600 border-2"
+                  type="text"
+                  placeholder="Option Name"
+                />
+                <input
+                  {...register(`${id}-optionExtra`)}
+                  className="py-2 px-4 focus:outline-none focus:border-gray-600 border-2"
+                  type="number"
+                  min={0}
+                  placeholder="Option Extra"
+                />
+                <span
+                  className="cursor-pointer text-white bg-red-500 ml-3 py-3 px-4 mt-5"
+                  onClick={() => onDeleteClick(id)}
+                >
+                  Delete Option
+                </span>
+              </div>
+            ))}
+        </div>
         <Button
-          loading={loading}
+          loading={uploading}
           canClick={formState.isValid}
           actionText="Create Dish"
         />

@@ -1,11 +1,18 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMe } from "../hooks/useMe";
 import nuberLogo from "../images/logo.svg";
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+import { faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
+import { LOCALSTORAGE_TOKEN } from "../constants";
+import { authTokenVar, isLoggedInVar } from "../apollo";
 
 export const Header: React.FC = () => {
   const { data } = useMe();
+  const logout = () => {
+    localStorage.removeItem(LOCALSTORAGE_TOKEN);
+    authTokenVar(null);
+    isLoggedInVar(false);
+  };
   return (
     <>
       {!data?.me.verified && (
@@ -23,6 +30,9 @@ export const Header: React.FC = () => {
             <Link to="/edit-profile">
               <FontAwesomeIcon icon={faUser} className="text-xl" />
             </Link>
+            <button onClick={logout} className=" pl-2">
+              <FontAwesomeIcon icon={faRightToBracket} className="text-xl" />
+            </button>
           </span>
         </div>
       </header>

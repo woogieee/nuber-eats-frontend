@@ -57,6 +57,14 @@ export const MyRestaurants = () => {
           </div>
         )}
       </div>
+      {data?.myRestaurants.ok &&
+      data.myRestaurants.restaurants.length === 0 ? null : (
+        <div className="max-w-screen-xl mx-auto mt-32 text-center">
+          <Link className="text-lime-600 hover:underline" to="/add-restaurant">
+            Create one &rarr;
+          </Link>
+        </div>
+      )}
     </div>
   );
 };
