@@ -11,6 +11,7 @@ interface IDishProps {
   options?: DishOption[] | null;
   addItemToOrder?: (dishId: number) => void;
   removeFromOrder?: (dishId: number) => void;
+  children?: React.ReactNode;
 }
 
 export const Dish: React.FC<IDishProps> = ({
