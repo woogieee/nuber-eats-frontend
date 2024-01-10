@@ -68,7 +68,6 @@ export type CreateDishInput = {
   description: Scalars['String']['input'];
   name: Scalars['String']['input'];
   options?: InputMaybe<Array<DishOptionInputType>>;
-  photo?: InputMaybe<Scalars['String']['input']>;
   price: Scalars['Int']['input'];
   restaurantId: Scalars['Int']['input'];
 };

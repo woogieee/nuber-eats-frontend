@@ -27,15 +27,12 @@ interface IForm {
   name: string;
   price: string;
   description: string;
-  // 추가로 다른값을 받게해줌
   [key: string]: string;
-  file: FileList;
 }
 
 export const AddDish = () => {
   const { restaurantId } = useParams<IParams>();
   const history = useHistory();
-  const [imageUrl, setImageUrl] = useState("");
   const [createDishMutation, { loading }] = useMutation<
     CreateDishMutation,
     CreateDishMutationVariables
@@ -51,54 +48,31 @@ export const AddDish = () => {
       },
     ],
   });
-
   const { register, handleSubmit, formState, getValues, setValue } =
     useForm<IForm>({
       // 특정 input 값이 변경될 때마다 실시간으로 form에서 validate 해줌
       mode: "onChange",
     });
+  const onSubmit = () => {
+    const { name, price, description, ...rest } = getValues();
 
-  const [uploading, setUploading] = useState(false);
-
-  const onSubmit = async () => {
-    try {
-      setUploading(true);
-      const { name, price, description, file, ...rest } = getValues();
-      const actualFile = file[0];
-      // FormData 생성
-      const formBody = new FormData();
-      formBody.append("file", actualFile);
-      // 파일 업로드
-      const { url: photo } = await (
-        await fetch("http://localhost:4000/uploads/", {
-          method: "POST",
-          body: formBody,
-        })
-      ).json();
-      setImageUrl(photo);
-      const optionObjects = optionsNumber.map((theId) => ({
-        name: rest[`${theId}-optionName`],
-        extra: +rest[`${theId}-optionExtra`],
-      }));
-      createDishMutation({
-        variables: {
-          input: {
-            name,
-            price: +price,
-            description,
-            restaurantId: +restaurantId,
-            options: optionObjects,
-            photo,
-          },
+    const optionObjects = optionsNumber.map((theId) => ({
+      name: rest[`${theId}-optionName`],
+      extra: +rest[`${theId}-optionExtra`],
+    }));
+    createDishMutation({
+      variables: {
+        input: {
+          name,
+          price: +price,
+          description,
+          restaurantId: +restaurantId,
+          options: optionObjects,
         },
-      });
-      console.log(getValues());
-      // history.goBack();
-    } catch (e) {
-      console.log(getValues());
-    }
+      },
+    });
+    history.goBack();
   };
-
   const [optionsNumber, setOptionsNumber] = useState<number[]>([]);
   // 옵션 추가 버튼
   const onAddOptionClick = () => {
@@ -143,13 +117,6 @@ export const AddDish = () => {
           placeholder="Description"
           {...register("description", { required: "description is required." })}
         />
-        <div>
-          <input
-            type="file"
-            accept="image/*"
-            {...register("file", { required: true })}
-          />
-        </div>
         <div className=" my-10">
           <h4 className=" font-medium mb-3 text-lg">Dish Options</h4>
           <span
@@ -184,7 +151,7 @@ export const AddDish = () => {
             ))}
         </div>
         <Button
-          loading={uploading}
+          loading={loading}
           canClick={formState.isValid}
           actionText="Create Dish"
         />

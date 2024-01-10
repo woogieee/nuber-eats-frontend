@@ -5,13 +5,17 @@ import { faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import { LOCALSTORAGE_TOKEN } from "../constants";
 import { authTokenVar, isLoggedInVar } from "../apollo";
+import { useApolloClient } from "@apollo/client";
 
 export const Header: React.FC = () => {
   const { data } = useMe();
+  const client = useApolloClient();
   const logout = () => {
     localStorage.removeItem(LOCALSTORAGE_TOKEN);
     authTokenVar(null);
     isLoggedInVar(false);
+    // Apollo Client 캐시 지우기
+    client.clearStore();
   };
   return (
     <>
