@@ -2,13 +2,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useMe } from "../hooks/useMe";
 import nuberLogo from "../images/logo.svg";
 import { faRightToBracket, faUser } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { LOCALSTORAGE_TOKEN } from "../constants";
 import { authTokenVar, isLoggedInVar } from "../apollo";
 import { useApolloClient } from "@apollo/client";
 
 export const Header: React.FC = () => {
   const { data } = useMe();
+  const history = useHistory();
   const client = useApolloClient();
   const logout = () => {
     localStorage.removeItem(LOCALSTORAGE_TOKEN);
@@ -16,6 +17,7 @@ export const Header: React.FC = () => {
     isLoggedInVar(false);
     // Apollo Client 캐시 지우기
     client.clearStore();
+    history.push("/");
   };
   return (
     <>
