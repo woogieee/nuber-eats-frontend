@@ -1,13 +1,18 @@
-import { gql, useQuery, useSubscription } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 import { useParams } from "react-router-dom";
 import {
+  EditOrderMutation,
+  EditOrderMutationVariables,
   GetOrderQuery,
   GetOrderQueryVariables,
+  OrderStatus,
   OrderUpdatesSubscription,
-  OrderUpdatesSubscriptionVariables,
+  UserRole,
 } from "../__generated__/graphql";
 import { Helmet } from "react-helmet-async";
 import { FULL_ORDER_FRAGMENT } from "../fragments";
+import { useEffect } from "react";
+import { useMe } from "../hooks/useMe";
 
 const GET_ORDER = gql`
   query getOrder($input: GetOrderInput!) {
@@ -31,31 +36,78 @@ const ORDER_SUBSCRIPTION = gql`
   ${FULL_ORDER_FRAGMENT}
 `;
 
+// 오더 상태변경
+const EDIT_ORDER = gql`
+  mutation editOrder($input: EditOrderInput!) {
+    editOrder(input: $input) {
+      ok
+      error
+    }
+  }
+`;
+
 interface IParams {
   id: string;
 }
 
 export const Order = () => {
   const params = useParams<IParams>();
-  const { data } = useQuery<GetOrderQuery, GetOrderQueryVariables>(GET_ORDER, {
+  const { data: userData } = useMe(); // 사용자가 누구인지 확인
+  const [editOrderMutation] = useMutation<
+    EditOrderMutation,
+    EditOrderMutationVariables
+  >(EDIT_ORDER);
+  const { data, subscribeToMore } = useQuery<
+    GetOrderQuery,
+    GetOrderQueryVariables
+  >(GET_ORDER, {
     variables: {
       input: {
         id: +params.id,
       },
     },
   });
-
-  const { data: subscriptionData } = useSubscription<
-    OrderUpdatesSubscription,
-    OrderUpdatesSubscriptionVariables
-  >(ORDER_SUBSCRIPTION, {
-    variables: {
-      input: {
-        id: +params.id,
+  useEffect(() => {
+    if (data?.getOrder.ok) {
+      subscribeToMore({
+        document: ORDER_SUBSCRIPTION,
+        variables: {
+          input: {
+            id: +params.id,
+          },
+        },
+        // updateQuery를 이용해 data를 덮어씌우고 query를 교체
+        updateQuery: (
+          prev,
+          {
+            subscriptionData: { data },
+          }: { subscriptionData: { data: OrderUpdatesSubscription } } // 내가 typescript에게 제공한 type
+        ) => {
+          // data가 존재하지 않는 경우 체크
+          if (!data) return prev;
+          return {
+            getOrder: {
+              ...prev.getOrder,
+              order: {
+                ...data.orderUpdates,
+              },
+            },
+          };
+        },
+      });
+    }
+  }, [data]);
+  // 오너만 호출하는 버튼, 누를 때 마다 newStatus랑 같이 호출
+  const onButtonClick = (newStatus: OrderStatus) => {
+    editOrderMutation({
+      variables: {
+        input: {
+          id: +params.id,
+          status: newStatus,
+        },
       },
-    },
-  });
-  console.log(subscriptionData);
+    });
+  };
   return (
     <div className="mt-32 container flex justify-center">
       <Helmet>
@@ -87,9 +139,37 @@ export const Order = () => {
               {data?.getOrder.order?.driver?.email || "Not yet."}
             </span>
           </div>
-          <span className=" text-center mt-5 mb-3  text-2xl text-lime-600">
-            Status: {data?.getOrder.order?.status}
-          </span>
+          {userData?.me.role === UserRole.Client && (
+            <span className=" text-center mt-5 mb-3  text-2xl text-lime-600">
+              Status: {data?.getOrder.order?.status}
+            </span>
+          )}
+          {userData?.me.role === UserRole.Owner && (
+            <>
+              {data?.getOrder.order?.status === OrderStatus.Pending && (
+                <button
+                  onClick={() => onButtonClick(OrderStatus.Cooking)}
+                  className="btn"
+                >
+                  Accept order
+                </button>
+              )}
+              {data?.getOrder.order?.status === OrderStatus.Cooking && (
+                <button
+                  onClick={() => onButtonClick(OrderStatus.Cooked)}
+                  className="btn"
+                >
+                  Order Cooked
+                </button>
+              )}
+              {data?.getOrder.order?.status !== OrderStatus.Cooking &&
+                data?.getOrder.order?.status !== OrderStatus.Pending && (
+                  <span className=" text-center mt-5 mb-3  text-2xl text-lime-600">
+                    Status: {data?.getOrder.order?.status}
+                  </span>
+                )}
+            </>
+          )}
         </div>
       </div>
     </div>

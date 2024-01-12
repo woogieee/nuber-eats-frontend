@@ -1,8 +1,9 @@
-import { gql, useQuery } from "@apollo/client";
-import { Link, useParams } from "react-router-dom";
+import { gql, useQuery, useSubscription } from "@apollo/client";
+import { Link, useHistory, useParams } from "react-router-dom";
 import {
   MyRestaurantQuery,
   MyRestaurantQueryVariables,
+  PendingOrdersSubscription,
 } from "../../__generated__/graphql";
 import { Helmet } from "react-helmet-async";
 import { Dish } from "../../components/dish";
@@ -14,6 +15,13 @@ import {
   VictoryTheme,
   VictoryVoronoiContainer,
 } from "victory";
+import {
+  DISH_FRAGMENT,
+  FULL_ORDER_FRAGMENT,
+  ORDERS_FRAGMENT,
+  RESTAURANT_FRAGMENT,
+} from "../../fragments";
+import { useEffect } from "react";
 
 export const MY_RESTAURANT_QUERY = gql`
   query myRestaurant($input: MyRestaurantInput!) {
@@ -21,37 +29,28 @@ export const MY_RESTAURANT_QUERY = gql`
       ok
       error
       restaurant {
-        id
-        name
-        coverImg
-        category {
-          name
-        }
-        address
-        isPromoted
+        ...RestaurantParts
         menu {
-          id
-          name
-          price
-          photo
-          description
-          options {
-            name
-            extra
-            choices {
-              name
-              extra
-            }
-          }
+          ...DishParts
         }
         orders {
-          id
-          createdAt
-          total
+          ...OrderParts
         }
       }
     }
   }
+  ${RESTAURANT_FRAGMENT}
+  ${DISH_FRAGMENT}
+  ${ORDERS_FRAGMENT}
+`;
+
+const PENDING_ORDERS_SUBSCRIPTION = gql`
+  subscription pendingOrders {
+    pendingOrders {
+      ...FullOrderParts
+    }
+  }
+  ${FULL_ORDER_FRAGMENT}
 `;
 
 interface IParams {
@@ -70,12 +69,22 @@ export const MyRestaurant = () => {
       },
     }
   );
-  console.log(data);
-
+  const { data: subscriptionData } = useSubscription<PendingOrdersSubscription>(
+    PENDING_ORDERS_SUBSCRIPTION
+  );
+  const history = useHistory();
+  useEffect(() => {
+    if (subscriptionData?.pendingOrders.id) {
+      history.push(`/orders/${subscriptionData.pendingOrders.id}`);
+      // subscriptionData가 있으면 오더 페이지로 보냄
+    }
+  }, [subscriptionData]);
   return (
     <div>
       <Helmet>
-        <title>My Restaurant | Nuber Eats</title>
+        <title>
+          {data?.myRestaurant.restaurant?.name || "Loading..."} | Nuber Eats
+        </title>
       </Helmet>
       <div
         className=" bg-gray-700 py-28 bg-center bg-cover"

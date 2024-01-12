@@ -8,8 +8,6 @@ import {
 import { setContext } from "@apollo/client/link/context";
 import { LOCALSTORAGE_TOKEN } from "./constants";
 import { getMainDefinition } from "@apollo/client/utilities";
-import { WebSocketLink } from "@apollo/client/link/ws";
-import { SubscriptionClient } from "subscriptions-transport-ws";
 import { GraphQLWsLink } from "@apollo/client/link/subscriptions";
 import { createClient } from "graphql-ws";
 
@@ -17,38 +15,22 @@ const token = localStorage.getItem(LOCALSTORAGE_TOKEN);
 export const isLoggedInVar = makeVar(Boolean(token));
 export const authTokenVar = makeVar(token);
 
-// ws
-/*const wsLink = new WebSocketLink({
-  uri: `ws://localhost:4000/graphql`,
-  options: {
-    reconnect: true,
+// WebSocket link 설정
+const wsLink = new GraphQLWsLink(
+  createClient({
+    url: `ws://localhost:4000/graphql`,
     connectionParams: {
       "x-jwt": authTokenVar() || "",
     },
-  },
-}); */
-/*
-const wsLink = new WebSocketLink(
-  new SubscriptionClient("ws://localhost:4000/graphql", {
-    connectionParams: {
-      authToken: { "x-jwt": authTokenVar() || "" },
-    },
-    reconnect: true,
   })
 );
-*/
-const wsLink = new GraphQLWsLink(
-  createClient({
-    url: "ws://localhost:4000/graphql",
-    connectionParams: {
-      authToken: { "x-jwt": authTokenVar() || "" },
-    },
-  })
-);
+
+// HTTP link 설정
 const httpLink = createHttpLink({
   uri: "http://localhost:4000/graphql",
 });
 
+// Auth link 설정 (헤더에 "x-jwt" 추가)
 const authLink = setContext((_, { headers }) => {
   return {
     headers: {
@@ -69,6 +51,7 @@ const splitLink = split(
   wsLink,
   authLink.concat(httpLink)
 );
+// Apollo Client 생성
 export const client = new ApolloClient({
   name: "nuber-eats-backend",
   // link: authLink.concat(httpLink),
