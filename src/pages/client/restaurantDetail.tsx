@@ -46,7 +46,7 @@ interface IRestaurantParams {
 
 export const Restaurant = () => {
   const params = useParams<IRestaurantParams>();
-  const { loading, data } = useQuery<RestaurantQuery, RestaurantQueryVariables>(
+  const { data } = useQuery<RestaurantQuery, RestaurantQueryVariables>(
     RESTAURANT_QUERY,
     {
       variables: {
@@ -197,7 +197,7 @@ export const Restaurant = () => {
           backgroundImage: `url(${data?.restaurant.restaurant?.coverImg})`,
         }}
       >
-        <div className="bg-white w-3/12 py-8 pl-32">
+        <div className="bg-white xl:w-3/12 py-8 pl-32">
           <h4 className="text-4xl mb-3">{data?.restaurant.restaurant?.name}</h4>
           <h5 className="text-sm font-light mb-2">
             {data?.restaurant.restaurant?.category?.name}
