@@ -79,6 +79,66 @@ export const MyRestaurant = () => {
       // subscriptionData가 있으면 오더 페이지로 보냄
     }
   }, [subscriptionData]);
+
+  /* 차트 x축, y축 그룹화 시작 */
+  const orders = data?.myRestaurant.restaurant?.orders;
+  // 주문을 yyyy-mm-dd으로 그룹화하고 동일한 날짜에 대한 total을 합산
+  const groupedOrders: { createdAt: string; total: number }[] | undefined =
+    orders?.reduce((acc, order) => {
+      if (order?.createdAt && typeof order.total === "number") {
+        const createdAtDate = new Date(order.createdAt);
+        const formattedDate = `${createdAtDate.getFullYear()}-${(
+          createdAtDate.getMonth() + 1
+        )
+          .toString()
+          .padStart(2, "0")}-${createdAtDate
+          .getDate()
+          .toString()
+          .padStart(2, "0")}`;
+        const existingGroup = acc.find(
+          (group) => group.createdAt === formattedDate
+        );
+
+        if (existingGroup) {
+          // 그룹이 이미 존재하면 total을 기존 그룹에 더함
+          existingGroup.total += order.total;
+        } else {
+          // 그룹이 존재하지 않으면 새로운 그룹을 생성
+          acc.push({
+            createdAt: formattedDate,
+            total: order.total,
+          });
+        }
+      }
+
+      return acc;
+    }, [] as { createdAt: string; total: number }[]);
+
+  // 만약 그룹화된 주문이 비어 있다면, 더미 데이터를 추가
+  if (groupedOrders && groupedOrders.length === 0) {
+    const currentDate = new Date();
+    const formattedDate = `${currentDate.getFullYear()}-${(
+      currentDate.getMonth() + 1
+    )
+      .toString()
+      .padStart(2, "0")}-${currentDate.getDate().toString().padStart(2, "0")}`;
+
+    groupedOrders.push({
+      createdAt: formattedDate,
+      total: 0, // 더미 데이터이므로 0으로 설정하거나 다른 기본값을 사용하세요.
+    });
+  }
+
+  // 그룹화된 주문을 차트에 표시할 형식으로 변환
+  const chartData =
+    groupedOrders?.map((group) => ({
+      x: group.createdAt,
+      y: group.total,
+    })) || [];
+
+  console.log(chartData);
+  /* 차트 x축, y축 그룹화 종료 */
+
   return (
     <div>
       <Helmet>
@@ -102,8 +162,15 @@ export const MyRestaurant = () => {
         >
           Add Dish &rarr;
         </Link>
-        <Link to={``} className=" text-white bg-lime-700 py-3 px-10">
+        {/* <Link to={``} className=" text-white bg-lime-700 py-3 px-10">
           Buy Promotion &rarr;
+        </Link> */}
+
+        <Link
+          to={`/edit-restaurant/${id}`}
+          className=" text-white bg-lime-700 py-3 px-10"
+        >
+          Edit Restaurant &rarr;
         </Link>
         <div className="mt-10">
           {data?.myRestaurant.restaurant?.menu.length === 0 ? (
@@ -134,7 +201,7 @@ export const MyRestaurant = () => {
             >
               <VictoryLine
                 // @ts-ignore
-                labels={({ datum }) => `$${datum.y}`}
+                labels={({ datum }) => `$${datum.y.toLocaleString()}`} // 여기서 숫자 포맷을 설정
                 labelComponent={
                   <VictoryLabel
                     style={{ fontSize: 18 }}
@@ -142,10 +209,11 @@ export const MyRestaurant = () => {
                     dy={-20}
                   />
                 }
-                data={data?.myRestaurant.restaurant?.orders.map((order) => ({
-                  x: order.createdAt,
-                  y: order.total,
-                }))}
+                data={chartData}
+                // {data?.myRestaurant.restaurant?.orders.map((order) => ({
+                //   x: order.createdAt,
+                //   y: order.total,
+                // }))}
                 interpolation="natural"
                 style={{
                   data: {

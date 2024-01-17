@@ -1,9 +1,9 @@
-import { gql, useApolloClient, useMutation } from "@apollo/client";
+import { gql, useApolloClient, useMutation, useQuery } from "@apollo/client";
 import {
   CreateRestaurantMutation,
   CreateRestaurantMutationVariables,
 } from "../../__generated__/graphql";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "../../components/button";
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
@@ -17,6 +17,22 @@ const CREATE_RESTAURANT_MUTATION = gql`
       error
       ok
       restaurantId
+    }
+  }
+`;
+
+const ALL_CATEGORIES_QUERY = gql`
+  query allCategories {
+    allCategories {
+      ok
+      error
+      categories {
+        id
+        name
+        coverImg
+        slug
+        restaurantCount
+      }
     }
   }
 `;
@@ -74,9 +90,10 @@ export const AddRestaurant = () => {
     onCompleted,
   });
 
-  const { register, getValues, formState, handleSubmit } = useForm<IFormProps>({
-    mode: "onChange",
-  });
+  const { control, register, getValues, formState, handleSubmit } =
+    useForm<IFormProps>({
+      mode: "onChange",
+    });
   // 버튼 상태
   const [uploading, setUploading] = useState(false);
 
@@ -106,6 +123,10 @@ export const AddRestaurant = () => {
       });
     } catch (e) {}
   };
+
+  // 카테고리 가져오기
+  const { data: categoriesData } = useQuery(ALL_CATEGORIES_QUERY);
+
   return (
     <div className="container flex flex-col items-center mt-52">
       <Helmet>
@@ -129,14 +150,34 @@ export const AddRestaurant = () => {
           placeholder="Address"
           {...register("address", { required: "Address is required" })}
         />
-        <input
+        {/* <input
           className="input"
           type="text"
           placeholder="Category Name"
           {...register("categoryName", {
             required: "Category Name is required",
           })}
-        />
+        /> */}
+        {/* Category dropdown */}
+        <div>
+          <label className="text-lg font-medium mb-1">Category</label>
+          <Controller
+            control={control}
+            name="categoryName"
+            render={({ field }) => (
+              <select {...field} className="input">
+                <option value="">Select category</option>
+                {categoriesData?.allCategories.categories?.map(
+                  (category: any) => (
+                    <option key={category.id} value={category.name}>
+                      {category.name}
+                    </option>
+                  )
+                )}
+              </select>
+            )}
+          />
+        </div>
         <div>
           <input
             type="file"

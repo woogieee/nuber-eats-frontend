@@ -37,7 +37,10 @@ export const Header: React.FC = () => {
               <FontAwesomeIcon icon={faUser} className="text-xl" />
             </Link>
             <button onClick={logout} className=" pl-2">
-              <FontAwesomeIcon icon={faRightToBracket} className="text-xl" />
+              <FontAwesomeIcon
+                icon={faRightToBracket}
+                className="text-xl ml-1"
+              />
             </button>
           </span>
         </div>

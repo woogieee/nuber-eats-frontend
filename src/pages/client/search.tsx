@@ -51,6 +51,10 @@ export const Search = () => {
 
   const onSearchSubmit = () => {
     const { searchTerm } = getValues();
+    // 새로운 검색어가 입력될 때만 페이지를 1로 초기화
+    if (searchTerm !== extractSearchTerm()) {
+      setPage(1);
+    }
     // /search와 값을 URL로 보내기
     history.push({
       pathname: "/search",
