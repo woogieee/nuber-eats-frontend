@@ -1,6 +1,8 @@
-import { gql, useQuery, useSubscription } from "@apollo/client";
+import { gql, useMutation, useQuery, useSubscription } from "@apollo/client";
 import { Link, useHistory, useParams } from "react-router-dom";
 import {
+  DeleteDishMutation,
+  DeleteDishMutationVariables,
   MyRestaurantQuery,
   MyRestaurantQueryVariables,
   PendingOrdersSubscription,
@@ -53,6 +55,15 @@ const PENDING_ORDERS_SUBSCRIPTION = gql`
   ${FULL_ORDER_FRAGMENT}
 `;
 
+const DELETE_DISH_MUTATION = gql`
+  mutation deleteDish($input: DeleteDishInput!) {
+    deleteDish(input: $input) {
+      ok
+      error
+    }
+  }
+`;
+
 interface IParams {
   id: string;
 }
@@ -72,13 +83,17 @@ export const MyRestaurant = () => {
   const { data: subscriptionData } = useSubscription<PendingOrdersSubscription>(
     PENDING_ORDERS_SUBSCRIPTION
   );
+  // const { data: dishDeleteData } = useMutation<
+  //   DeleteDishMutation,
+  //   DeleteDishMutationVariables
+  // >(DELETE_DISH_MUTATION);
   const history = useHistory();
   useEffect(() => {
     if (subscriptionData?.pendingOrders.id) {
       history.push(`/orders/${subscriptionData.pendingOrders.id}`);
       // subscriptionData가 있으면 오더 페이지로 보냄
     }
-  }, [subscriptionData]);
+  }, [subscriptionData, history]);
 
   /* 차트 x축, y축 그룹화 시작 */
   const orders = data?.myRestaurant.restaurant?.orders;
@@ -139,6 +154,28 @@ export const MyRestaurant = () => {
   console.log(chartData);
   /* 차트 x축, y축 그룹화 종료 */
 
+  /* Dish 삭제 시작 */
+  const [deleteDishMutation] = useMutation<
+    DeleteDishMutation,
+    DeleteDishMutationVariables
+  >(DELETE_DISH_MUTATION);
+  const dishDeletebtnClick = async (id: number, name: string) => {
+    const confirmed = window.confirm(`${name} 를 삭제하시겠습니까?`);
+    if (confirmed) {
+      try {
+        await deleteDishMutation({
+          variables: {
+            input: {
+              dishId: id,
+            },
+          },
+        });
+        window.location.reload();
+      } catch (e) {}
+    }
+  };
+  /* Dish 삭제 종료 */
+
   return (
     <div>
       <Helmet>
@@ -183,6 +220,9 @@ export const MyRestaurant = () => {
                   name={dish.name}
                   description={dish.description}
                   price={dish.price}
+                  photo={dish.photo!}
+                  id={dish.id}
+                  dishDeletebtnClick={dishDeletebtnClick}
                 />
               ))}
             </div>

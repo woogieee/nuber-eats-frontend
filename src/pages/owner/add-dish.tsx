@@ -1,4 +1,4 @@
-import { gql, useMutation } from "@apollo/client";
+import { gql, useApolloClient, useMutation } from "@apollo/client";
 import { Helmet } from "react-helmet-async";
 import { useForm } from "react-hook-form";
 import { useHistory, useParams } from "react-router-dom";
@@ -7,8 +7,10 @@ import { MY_RESTAURANT_QUERY } from "./my-restaurant";
 import {
   CreateDishMutation,
   CreateDishMutationVariables,
+  DishOptionInputType,
 } from "../../__generated__/graphql";
 import { useState } from "react";
+import { FormError } from "../../components/form-error";
 
 const CREATE_DISH_MUTATION = gql`
   mutation createDish($input: CreateDishInput!) {
@@ -27,13 +29,23 @@ interface IForm {
   name: string;
   price: string;
   description: string;
-  [key: string]: string;
+  file: FileList;
+  [key: string]: string | FileList;
 }
 
 export const AddDish = () => {
   const { restaurantId } = useParams<IParams>();
   const history = useHistory();
-  const [createDishMutation, { loading, error }] = useMutation<
+  const onCompleted = (data: CreateDishMutation) => {
+    const {
+      createDish: { ok },
+    } = data;
+    if (ok) {
+      setUploading(false);
+    }
+  };
+
+  const [createDishMutation, { data }] = useMutation<
     CreateDishMutation,
     CreateDishMutationVariables
   >(CREATE_DISH_MUTATION, {
@@ -53,26 +65,44 @@ export const AddDish = () => {
       // 특정 input 값이 변경될 때마다 실시간으로 form에서 validate 해줌
       mode: "onChange",
     });
-  const onSubmit = () => {
-    const { name, price, description, ...rest } = getValues();
+  const [uploading, setUploading] = useState(false);
 
-    const optionObjects = optionsNumber.map((theId) => ({
-      name: rest[`${theId}-optionName`],
-      extra: +rest[`${theId}-optionExtra`],
-    }));
-    createDishMutation({
-      variables: {
-        input: {
-          name,
-          price: +price,
-          description,
-          restaurantId: +restaurantId,
-          options: optionObjects,
+  const onSubmit = async () => {
+    try {
+      setUploading(true);
+      const { file, name, price, description, ...rest } = getValues();
+      /* 사진 업로드 시작 */
+      const actualFile = file[0];
+      const formBody = new FormData();
+      formBody.append("file", actualFile);
+      const { url: photo } = await (
+        await fetch("http://localhost:4000/uploads/", {
+          method: "POST",
+          body: formBody,
+        })
+      ).json();
+      /* 사진 업로드 종료 */
+      const optionObjects = optionsNumber.map((theId) => ({
+        name: rest[`${theId}-optionName`],
+        extra: +rest[`${theId}-optionExtra`],
+      }));
+      createDishMutation({
+        variables: {
+          input: {
+            name,
+            price: +price,
+            description,
+            restaurantId: +restaurantId,
+            options: optionObjects as DishOptionInputType[],
+            photo,
+          },
         },
-      },
-    });
-    history.goBack();
+      });
+      console.log(photo);
+      history.goBack();
+    } catch (error) {}
   };
+
   const [optionsNumber, setOptionsNumber] = useState<number[]>([]);
   // 옵션 추가 버튼
   const onAddOptionClick = () => {
@@ -115,10 +145,20 @@ export const AddDish = () => {
           className="input"
           type="text"
           placeholder="Description"
+          minLength={5}
           {...register("description", { required: "description is required." })}
         />
+        <div>
+          <input
+            type="file"
+            accept="image/*"
+            {...register("file", { required: true })}
+          />
+        </div>
         <div className=" my-10">
-          <h4 className=" font-medium mb-3 text-lg">Dish Options</h4>
+          <h4 className=" font-medium mb-3 text-lg text-center">
+            Dish Options
+          </h4>
           <span
             onClick={onAddOptionClick}
             className="cursor-pointer text-white bg-gray-900 py-1 px-2 mt-5"
@@ -151,10 +191,13 @@ export const AddDish = () => {
             ))}
         </div>
         <Button
-          loading={loading}
+          loading={uploading}
           canClick={formState.isValid}
           actionText="Create Dish"
         />
+        {data?.createDish.error && (
+          <FormError errorMessage={data.createDish.error} />
+        )}
       </form>
     </div>
   );

@@ -1,4 +1,6 @@
 import { DishOption } from "../__generated__/graphql";
+import { useMe } from "../hooks/useMe";
+import { UserRole } from "../__generated__/graphql";
 
 interface IDishProps {
   id?: number;
@@ -12,6 +14,8 @@ interface IDishProps {
   addItemToOrder?: (dishId: number) => void;
   removeFromOrder?: (dishId: number) => void;
   children?: React.ReactNode;
+  photo?: string;
+  dishDeletebtnClick?: (dishId: number, name: string) => void;
 }
 
 export const Dish: React.FC<IDishProps> = ({
@@ -26,6 +30,8 @@ export const Dish: React.FC<IDishProps> = ({
   addItemToOrder,
   removeFromOrder,
   children: dishOptions,
+  photo,
+  dishDeletebtnClick,
 }) => {
   const onClick = () => {
     if (orderStarted) {
@@ -37,6 +43,9 @@ export const Dish: React.FC<IDishProps> = ({
       }
     }
   };
+  console.log(photo);
+
+  const { data } = useMe();
 
   return (
     <div
@@ -45,6 +54,10 @@ export const Dish: React.FC<IDishProps> = ({
       }`}
     >
       <div className="mb-5">
+        <div
+          style={{ backgroundImage: `url(${photo})` }}
+          className=" bg-cover bg-center mb-3 py-28"
+        ></div>
         <h3 className="text-lg font-medium flex items-center">
           {name}{" "}
           {orderStarted && (
@@ -57,9 +70,18 @@ export const Dish: React.FC<IDishProps> = ({
               {isSelected ? "Remove" : "Add"}
             </button>
           )}
+          {data?.me.role === UserRole.Owner && (
+            <button
+              onClick={() => dishDeletebtnClick?.(id, name)}
+              className=" hover:bg-orange-400 ml-3 py-1 px-3 focus:outline-none text-sm text-white bg-red-500"
+            >
+              delete
+            </button>
+          )}
         </h3>
         <h4 className="font-medium">{description}</h4>
       </div>
+
       <span>${price}</span>
       {isCustomer && options && options?.length !== 0 && (
         <div>

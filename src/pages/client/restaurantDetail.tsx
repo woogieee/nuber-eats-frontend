@@ -240,6 +240,7 @@ export const Restaurant = () => {
               options={dish.options}
               addItemToOrder={addItemToOrder}
               removeFromOrder={removeFromOrder}
+              photo={dish.photo!}
             >
               {dish.options?.map((option, index) => (
                 <DishOption

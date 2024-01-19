@@ -10,6 +10,7 @@ import { useState } from "react";
 import { FormError } from "../../components/form-error";
 import { MY_RESTAURANTS_QUERY } from "./my-restaurants";
 import { useHistory } from "react-router-dom";
+import { CATEGORY_FRAGMENT } from "../../fragments";
 
 const CREATE_RESTAURANT_MUTATION = gql`
   mutation createRestaurant($input: CreateRestaurantInput!) {
@@ -27,14 +28,11 @@ const ALL_CATEGORIES_QUERY = gql`
       ok
       error
       categories {
-        id
-        name
-        coverImg
-        slug
-        restaurantCount
+        ...CategoryParts
       }
     }
   }
+  ${CATEGORY_FRAGMENT}
 `;
 
 interface IFormProps {
@@ -150,14 +148,6 @@ export const AddRestaurant = () => {
           placeholder="Address"
           {...register("address", { required: "Address is required" })}
         />
-        {/* <input
-          className="input"
-          type="text"
-          placeholder="Category Name"
-          {...register("categoryName", {
-            required: "Category Name is required",
-          })}
-        /> */}
         {/* Category dropdown */}
         <div>
           <label className="text-lg font-medium mb-1">Category</label>
