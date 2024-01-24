@@ -36,6 +36,7 @@ const httpLink = createHttpLink({
       : "http://localhost:4000/graphql",
 });
 
+console.log("NODE_ENV ===== " + process.env.NODE_ENV);
 // Auth link 설정 (헤더에 "x-jwt" 추가)
 const authLink = setContext((_, { headers }) => {
   return {
