@@ -44,12 +44,14 @@ export const CreateAccount = () => {
   const history = useHistory();
   const onCompleted = (data: CreateAccountMutation) => {
     const {
-      createAccount: { ok },
+      createAccount: { ok, error },
     } = data;
     if (ok) {
       alert("Account Created! Log in now!");
       // redirect
       history.push("/");
+    } else {
+      console.log(error);
     }
   };
   const [
