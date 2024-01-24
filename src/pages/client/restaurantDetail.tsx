@@ -153,7 +153,7 @@ export const Restaurant = () => {
   const history = useHistory();
   const onCompleted = (data: CreateOrderMutation) => {
     const {
-      createOrder: { ok, orderId },
+      createOrder: { orderId },
     } = data;
     if (data.createOrder.ok) {
       history.push(`/orders/${orderId}`);

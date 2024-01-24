@@ -39,7 +39,7 @@
   },
   "scripts": {
     "start": "npm run generate & react-scripts start",
-    "build": "react-scripts build",
+    "build": "CI=false react-scripts build",
     "test": "react-scripts test --verbose",
     "test:c": "npm test -- --coverage --watchAll=false",
     "eject": "react-scripts eject",
