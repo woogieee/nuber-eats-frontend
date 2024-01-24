@@ -18,7 +18,10 @@ export const authTokenVar = makeVar(token);
 // WebSocket link 설정
 const wsLink = new GraphQLWsLink(
   createClient({
-    url: `ws://localhost:4000/graphql`,
+    url:
+      process.env.NODE_ENV === "production"
+        ? "wss://nuber-eats-backend.onrender.com/graphql"
+        : `ws://localhost:4000/graphql`,
     connectionParams: {
       "x-jwt": authTokenVar() || "",
     },
@@ -27,7 +30,10 @@ const wsLink = new GraphQLWsLink(
 
 // HTTP link 설정
 const httpLink = createHttpLink({
-  uri: "http://localhost:4000/graphql",
+  uri:
+    process.env.NODE_ENV === "production"
+      ? "https://nuber-eats-backend.onrender.com/graphql"
+      : "http://localhost:4000/graphql",
 });
 
 // Auth link 설정 (헤더에 "x-jwt" 추가)
