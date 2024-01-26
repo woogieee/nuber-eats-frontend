@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form";
 import { Link, useHistory } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
-const RESTAURANTS_QUERY = gql`
+export const RESTAURANTS_QUERY = gql`
   query restaurantsPage($input: RestaurantsInput!) {
     allCategories {
       ok
