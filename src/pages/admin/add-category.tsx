@@ -36,22 +36,32 @@ export const AddCategory = () => {
     CreateCategoryMutation,
     CreateCategoryMutationVariables
   >(CREATE_CATEGORY_MUTATION);
+
   const [uploading, setUploading] = useState(false);
+
+  const uploadFile = async (file: File) => {
+    const formBody = new FormData();
+    formBody.append("file", file);
+
+    const response = await fetch("http://localhost:4000/uploads/", {
+      method: "POST",
+      body: formBody,
+    });
+
+    const { url: coverImg } = await response.json();
+    return coverImg;
+  };
 
   const onSubmit = async () => {
     try {
       setUploading(true);
+
       const { file, name, slug } = getValues();
       const actualFile = file[0];
-      const formBody = new FormData();
-      formBody.append("file", actualFile);
-      const { url: coverImg } = await (
-        await fetch("http://localhost:4000/uploads/", {
-          method: "POST",
-          body: formBody,
-        })
-      ).json();
-      createCategoryMutation({
+
+      const coverImg = await uploadFile(actualFile);
+
+      await createCategoryMutation({
         variables: {
           input: {
             name,
@@ -60,8 +70,13 @@ export const AddCategory = () => {
           },
         },
       });
+
       history.goBack();
-    } catch (e) {}
+    } catch (e) {
+      console.error("Error creating category:", e);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
