@@ -15,6 +15,8 @@ import { AddDish } from "../pages/owner/add-dish";
 import { Order } from "../pages/order";
 import { Dashboard } from "../pages/driver/dashboard";
 import { UserRole } from "../__generated__/graphql";
+import { AddCategory } from "../pages/admin/add-category";
+import { AdminMain } from "../pages/admin/admin-main";
 
 // client Router
 const clientRoutes = [
@@ -38,6 +40,12 @@ const restaurantRoutes = [
 ];
 // Driver Router
 const driverRoutes = [{ path: "/", component: <Dashboard /> }];
+
+// Admin Router
+const adminRoutes = [
+  { path: "/", component: <AdminMain /> },
+  { path: "/add-category", component: <AddCategory /> },
+];
 
 export const LoggedInRouter = () => {
   const { data, loading, error } = useMe();
@@ -67,6 +75,12 @@ export const LoggedInRouter = () => {
           ))}
         {data.me.role === UserRole.Delivery &&
           driverRoutes.map((route) => (
+            <Route exact key={route.path} path={route.path}>
+              {route.component}
+            </Route>
+          ))}
+        {data.me.role === UserRole.Admin &&
+          adminRoutes.map((route) => (
             <Route exact key={route.path} path={route.path}>
               {route.component}
             </Route>

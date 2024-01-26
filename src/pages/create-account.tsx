@@ -119,9 +119,12 @@ export const CreateAccount = () => {
             <FormError errorMessage={errors.password?.message} />
           )}
           <select {...register("role", { required: true })} className="input">
-            {Object.keys(UserRole).map((role, index) => (
-              <option key={index}>{role}</option>
-            ))}
+            {Object.keys(UserRole).map((role, index) => {
+              if (role === UserRole.Admin) {
+                return null;
+              }
+              return <option key={index}>{role}</option>;
+            })}
           </select>
           <Button
             canClick={formState.isValid}
