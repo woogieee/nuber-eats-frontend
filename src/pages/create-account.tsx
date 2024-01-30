@@ -120,9 +120,9 @@ export const CreateAccount = () => {
           )}
           <select {...register("role", { required: true })} className="input">
             {Object.keys(UserRole).map((role, index) => {
-              // if (role === UserRole.Admin) {
-              //   return null;
-              // }
+              if (role === UserRole.Admin) {
+                return null;
+              }
               return <option key={index}>{role}</option>;
             })}
           </select>

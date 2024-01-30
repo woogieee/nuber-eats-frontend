@@ -128,10 +128,10 @@ export const Dashboard = () => {
     COOKED_ORDERS_SUBSCRIPTION
   );
   useEffect(() => {
-    if (cookedOrdersData?.cookedOrders.id) {
+    if (cookedOrdersData?.cookedOrders?.id) {
       makeRoute();
     }
-  }, [cookedOrdersData]);
+  }, [cookedOrdersData?.cookedOrders?.id]);
 
   const history = useHistory();
 
@@ -166,7 +166,7 @@ export const Dashboard = () => {
         style={{ width: window.innerWidth, height: "50vh" }}
       >
         <GoogleMapReact
-          bootstrapURLKeys={{ key: "AIzaSyDYYorr-DhUnSNrBZsvcnG7TqcdHvC9_J8" }}
+          bootstrapURLKeys={{ key: `${process.env.REACT_APP_GOOGLE_API}` }}
           yesIWantToUseGoogleMapApiInternals // 내 좌표로 지도를 이동시킴
           onGoogleApiLoaded={onApiLoaded} // 우리에게 map을 줌
           defaultZoom={16}
