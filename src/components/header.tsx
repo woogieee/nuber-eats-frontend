@@ -11,13 +11,13 @@ import { LOCALSTORAGE_TOKEN } from "../constants";
 import { authTokenVar, isLoggedInVar } from "../apollo";
 import { gql, useApolloClient, useMutation } from "@apollo/client";
 import {
-  UserGpsMutation,
-  UserGpsMutationVariables,
+  UpdateUserGpsMutation,
+  UpdateUserGpsMutationVariables,
 } from "../__generated__/graphql";
 
-const USER_GPS_MUTATION = gql`
-  mutation userGPS($input: CreateUserGPSInput!) {
-    userGPS(input: $input) {
+const UPDATE_USER_GPS_MUTATION = gql`
+  mutation updateUserGPS($input: UpdateUserGPSInput!) {
+    updateUserGPS(input: $input) {
       ok
       error
     }
@@ -37,10 +37,10 @@ export const Header: React.FC = () => {
     history.push("/");
   };
 
-  const [userGPSMutation] = useMutation<
-    UserGpsMutation,
-    UserGpsMutationVariables
-  >(USER_GPS_MUTATION);
+  const [updateUserGPSMutation] = useMutation<
+    UpdateUserGpsMutation,
+    UpdateUserGpsMutationVariables
+  >(UPDATE_USER_GPS_MUTATION);
 
   const getGps = () => {
     // Geolocation API가 지원되는지 확인
@@ -55,7 +55,7 @@ export const Header: React.FC = () => {
 
           // 사용자가 확인을 선택한 경우에만 위치 저장
           if (userConsent) {
-            userGPSMutation({
+            updateUserGPSMutation({
               variables: {
                 input: {
                   userId: data?.me.id!,
@@ -64,7 +64,7 @@ export const Header: React.FC = () => {
                 },
               },
             });
-            console.log("위치가 성공적으로 저장되었습니다.");
+            alert("위치가 저장되었습니다.");
           } else {
             alert("사용자가 위치 저장을 취소했습니다.");
           }

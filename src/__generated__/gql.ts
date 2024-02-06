@@ -13,7 +13,7 @@ import { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/
  * Therefore it is highly recommended to use the babel or swc plugin for production.
  */
 const documents = {
-    "\n  mutation userGPS($input: CreateUserGPSInput!) {\n    userGPS(input: $input) {\n      ok\n      error\n    }\n  }\n": types.UserGpsDocument,
+    "\n  mutation updateUserGPS($input: UpdateUserGPSInput!) {\n    updateUserGPS(input: $input) {\n      ok\n      error\n    }\n  }\n": types.UpdateUserGpsDocument,
     "\n  fragment RestaurantParts on Restaurant {\n    id\n    name\n    coverImg\n    category {\n      name\n    }\n    address\n    isPromoted\n  }\n": types.RestaurantPartsFragmentDoc,
     "\n  fragment CategoryParts on Category {\n    id\n    name\n    coverImg\n    slug\n    restaurantCount\n  }\n": types.CategoryPartsFragmentDoc,
     "\n  fragment DishParts on Dish {\n    id\n    name\n    price\n    photo\n    description\n    options {\n      name\n      extra\n      choices {\n        name\n        extra\n      }\n    }\n  }\n": types.DishPartsFragmentDoc,
@@ -64,7 +64,7 @@ export function gql(source: string): unknown;
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function gql(source: "\n  mutation userGPS($input: CreateUserGPSInput!) {\n    userGPS(input: $input) {\n      ok\n      error\n    }\n  }\n"): (typeof documents)["\n  mutation userGPS($input: CreateUserGPSInput!) {\n    userGPS(input: $input) {\n      ok\n      error\n    }\n  }\n"];
+export function gql(source: "\n  mutation updateUserGPS($input: UpdateUserGPSInput!) {\n    updateUserGPS(input: $input) {\n      ok\n      error\n    }\n  }\n"): (typeof documents)["\n  mutation updateUserGPS($input: UpdateUserGPSInput!) {\n    updateUserGPS(input: $input) {\n      ok\n      error\n    }\n  }\n"];
 /**
  * The gql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
