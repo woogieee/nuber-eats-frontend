@@ -61,6 +61,11 @@ export const FULL_ORDER_FRAGMENT = gql`
     }
     customer {
       email
+      gpsList {
+        id
+        lat
+        lng
+      }
     }
     restaurant {
       name

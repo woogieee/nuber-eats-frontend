@@ -45,6 +45,10 @@ export const Dashboard = () => {
   const [driverCoords, setDriverCoords] = useState<ICoords>({ lng: 0, lat: 0 });
   const [map, setMap] = useState<google.maps.Map>();
   const [maps, setMaps] = useState<any>();
+  // 주문 데이터 가져오기
+  const { data: cookedOrdersData } = useSubscription<CookedOrdersSubscription>(
+    COOKED_ORDERS_SUBSCRIPTION
+  );
   // 위치를 state에 저장
   const onSuccess = ({
     coords: { latitude, longitude },
@@ -81,7 +85,7 @@ export const Dashboard = () => {
         }
       );
     }
-  }, [driverCoords.lat, driverCoords.lng]);
+  });
 
   const onApiLoaded = ({ map, maps }: { map: any; maps: any }) => {
     // 이 함수를 통해서 map 객체와 상호작용
@@ -98,40 +102,47 @@ export const Dashboard = () => {
       const directionsService = new google.maps.DirectionsService();
       const directionsRenderer = new google.maps.DirectionsRenderer();
       directionsRenderer.setMap(map);
-      directionsService.route(
-        // 주소없이 좌표만으로 경로 만드는 방법
-        {
-          origin: {
-            location: new google.maps.LatLng(
-              driverCoords.lat,
-              driverCoords.lng
-            ),
+
+      const customerLat = cookedOrdersData?.cookedOrders.customer?.gpsList?.lat;
+      const customerLng = cookedOrdersData?.cookedOrders.customer?.gpsList?.lng;
+
+      if (customerLat !== undefined && customerLng !== undefined) {
+        const destination = new google.maps.LatLng(customerLat, customerLng);
+        directionsService.route(
+          // 주소없이 좌표만으로 경로 만드는 방법
+          {
+            origin: {
+              location: new google.maps.LatLng(
+                driverCoords.lat,
+                driverCoords.lng
+              ),
+            },
+            // destination: {
+            //   location: new google.maps.LatLng(
+            //     cookedOrdersData?.cookedOrders.customer?.gpsList?.lat,
+            //     cookedOrdersData?.cookedOrders.customer?.gpsList?.lng
+            //   ),
+            // },
+            destination: { location: destination },
+            travelMode: google.maps.TravelMode.TRANSIT,
+            // 국내에선 대중교통밖에 지원하지 않음.
           },
-          destination: {
-            location: new google.maps.LatLng(
-              driverCoords.lat + 0.05,
-              driverCoords.lng + 0.05
-            ),
-          },
-          travelMode: google.maps.TravelMode.TRANSIT,
-          // 국내에선 대중교통밖에 지원하지 않음.
-        },
-        (result) => {
-          // 경로 그려주기
-          directionsRenderer.setDirections(result);
-        }
-      );
+          (result) => {
+            // 경로 그려주기
+            directionsRenderer.setDirections(result);
+          }
+        );
+      }
+    } else {
+      console.error("Map is not available.");
     }
   };
-  // 주문 데이터 가져오기
-  const { data: cookedOrdersData } = useSubscription<CookedOrdersSubscription>(
-    COOKED_ORDERS_SUBSCRIPTION
-  );
+
   useEffect(() => {
     if (cookedOrdersData?.cookedOrders?.id) {
       makeRoute();
     }
-  }, [cookedOrdersData?.cookedOrders?.id]);
+  });
 
   const history = useHistory();
 
