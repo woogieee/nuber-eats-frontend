@@ -46,6 +46,20 @@ interface IRestaurantParams {
 
 export const Restaurant = () => {
   const params = useParams<IRestaurantParams>();
+
+  // 모달 시작
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const openModal = () => {
+    setIsModalOpen(true);
+    // 여기에서 총 합계를 계산하고 필요한 경우 상태를 업데이트합니다.
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+  // 모달 종료
+
   const { data } = useQuery<RestaurantQuery, RestaurantQueryVariables>(
     RESTAURANT_QUERY,
     {
@@ -186,6 +200,43 @@ export const Restaurant = () => {
       });
     }
   };
+
+  // 모달 계산식 시작
+  // totalPrice 계산 함수
+  const calculateTotalPrice = () => {
+    let totalPrice = 0;
+    orderItems.forEach((item) => {
+      const dish = data?.restaurant.restaurant?.menu.find(
+        (d) => d.id === item.dishId
+      );
+      if (dish) {
+        totalPrice += dish.price;
+      }
+    });
+    return totalPrice;
+  };
+
+  // totalOptionPrice 계산 함수
+  const calculateTotalOptionPrice = () => {
+    let totalOptionPrice = 0;
+    orderItems.forEach((item) => {
+      const dish = data?.restaurant.restaurant?.menu.find(
+        (d) => d.id === item.dishId
+      );
+      if (dish?.options) {
+        dish.options?.forEach((dishOption) => {
+          // 선택된 option들만 체크해서 더하기
+          if (isOptionSelected(item.dishId, dishOption.name)) {
+            totalOptionPrice += dishOption.extra || 0;
+          }
+        });
+      }
+    });
+    return totalOptionPrice;
+  };
+  const totalPrice = calculateTotalPrice();
+  const totalOptionPrice = calculateTotalOptionPrice();
+  // 모달 계산식 종료
   return (
     <div>
       <Helmet>
@@ -215,7 +266,11 @@ export const Restaurant = () => {
         )}
         {orderStarted && (
           <div className="flex items-center">
-            <button onClick={triggerConfirmOrder} className="btn px-10 mr-3">
+            {/* <button onClick={triggerConfirmOrder} className="btn px-10 mr-3">
+              Confirm Order
+            </button> */}
+            {/* Confirm Order 버튼 */}
+            <button onClick={openModal} className="btn px-10 mr-3">
               Confirm Order
             </button>
             <button
@@ -257,6 +312,70 @@ export const Restaurant = () => {
           ))}
         </div>
       </div>
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+          <div className="bg-white p-8">
+            {/* 모달 내용 */}
+            <h2 className="text-3xl font-bold mb-4">주문 내역서</h2>
+            <ul>
+              {orderItems.map((item, index) => (
+                <li key={index} className="mb-4">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-lg font-semibold">
+                        {
+                          data?.restaurant.restaurant?.menu.find(
+                            (dish) => dish.id === item.dishId
+                          )?.name
+                        }
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        $
+                        {
+                          data?.restaurant.restaurant?.menu.find(
+                            (dish) => dish.id === item.dishId
+                          )?.price
+                        }
+                      </p>
+                    </div>
+                    <ul className="ml-4">
+                      {item.options?.map((option, optionIndex) => (
+                        <li key={optionIndex} className="text-sm text-gray-600">
+                          {option.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4">
+              <p className="text-lg font-semibold">
+                Total Price: ${totalPrice}
+              </p>
+              <p className="text-lg font-semibold">
+                Total Option Price: ${totalOptionPrice}
+              </p>
+              <p className="text-lg font-semibold">
+                Total Order Price: ${totalPrice + totalOptionPrice}
+              </p>
+            </div>
+
+            {/* 확인 및 취소 버튼 */}
+            <div className="mt-6 flex justify-end">
+              <button onClick={triggerConfirmOrder} className="btn px-4 mr-2">
+                OK
+              </button>
+              <button
+                onClick={closeModal}
+                className="btn px-4 bg-black hover:bg-black"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
