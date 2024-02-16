@@ -43,7 +43,7 @@ export const AddCategory = () => {
     const formBody = new FormData();
     formBody.append("file", file);
 
-    const response = await fetch("http://localhost:4000/uploads/", {
+    const response = await fetch(`${process.env.FILE_UPLOAD}`, {
       method: "POST",
       body: formBody,
     });

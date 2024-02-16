@@ -42,7 +42,6 @@ const authLink = setContext((_, { headers }) => {
     headers: {
       ...headers,
       "x-jwt": authTokenVar() || "",
-      "Content-Type": "application/json", // Content-Type 추가
     },
   };
 });

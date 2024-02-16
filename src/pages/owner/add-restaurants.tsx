@@ -103,7 +103,7 @@ export const AddRestaurant = () => {
       const formBody = new FormData();
       formBody.append("file", actualFile);
       const { url: coverImg } = await (
-        await fetch("http://localhost:4000/uploads/", {
+        await fetch(`${process.env.FILE_UPLOAD}`, {
           method: "POST",
           body: formBody,
         })
