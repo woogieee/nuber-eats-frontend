@@ -200,6 +200,7 @@ export const Dashboard = () => {
               Pick it up soon @{" "}
               {cookedOrdersData?.cookedOrders.restaurant?.name}
             </h1>
+
             <button
               onClick={() => triggerMutation(cookedOrdersData?.cookedOrders.id)}
               className="btn w-full  block  text-center mt-5"

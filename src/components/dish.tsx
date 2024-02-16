@@ -43,7 +43,6 @@ export const Dish: React.FC<IDishProps> = ({
       }
     }
   };
-  console.log(photo);
 
   const { data } = useMe();
 

@@ -119,7 +119,9 @@ export const AddRestaurant = () => {
           },
         },
       });
-    } catch (e) {}
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   // 카테고리 가져오기

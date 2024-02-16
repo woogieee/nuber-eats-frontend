@@ -3,6 +3,8 @@ import { Link, useHistory, useParams } from "react-router-dom";
 import {
   DeleteDishMutation,
   DeleteDishMutationVariables,
+  DeleteRestaurantMutation,
+  DeleteRestaurantMutationVariables,
   MyRestaurantQuery,
   MyRestaurantQueryVariables,
   PendingOrdersSubscription,
@@ -64,6 +66,15 @@ const DELETE_DISH_MUTATION = gql`
   }
 `;
 
+const DELETE_RESTAURANT_MUTATION = gql`
+  mutation deleteRestaurant($input: DeleteRestaurantInput!) {
+    deleteRestaurant(input: $input) {
+      ok
+      error
+    }
+  }
+`;
+
 interface IParams {
   id: string;
 }
@@ -83,15 +94,12 @@ export const MyRestaurant = () => {
   const { data: subscriptionData } = useSubscription<PendingOrdersSubscription>(
     PENDING_ORDERS_SUBSCRIPTION
   );
-  // const { data: dishDeleteData } = useMutation<
-  //   DeleteDishMutation,
-  //   DeleteDishMutationVariables
-  // >(DELETE_DISH_MUTATION);
   const history = useHistory();
   useEffect(() => {
     if (subscriptionData?.pendingOrders.id) {
-      history.push(`/orders/${subscriptionData.pendingOrders.id}`);
+      // history.push(`/orders/${subscriptionData.pendingOrders.id}`);
       // subscriptionData가 있으면 오더 페이지로 보냄
+      window.open(`/orders/${subscriptionData.pendingOrders.id}`, "_blank");
     }
   }, [subscriptionData, history]);
 
@@ -151,7 +159,6 @@ export const MyRestaurant = () => {
       y: group.total,
     })) || [];
 
-  console.log(chartData);
   /* 차트 x축, y축 그룹화 종료 */
 
   /* Dish 삭제 시작 */
@@ -175,6 +182,30 @@ export const MyRestaurant = () => {
     }
   };
   /* Dish 삭제 종료 */
+  /* 레스토랑 삭제 시작 */
+  const [deleteRestaurantMutation] = useMutation<
+    DeleteRestaurantMutation,
+    DeleteRestaurantMutationVariables
+  >(DELETE_RESTAURANT_MUTATION);
+  const restaurantDeleteBtn = async (id: number) => {
+    const confirmed = window.confirm(
+      `${data?.myRestaurant.restaurant?.name} 가게를 삭제 하시겠습니까?`
+    );
+    if (confirmed) {
+      try {
+        await deleteRestaurantMutation({
+          variables: {
+            input: {
+              restaurantId: id,
+            },
+          },
+        });
+        history.push("/");
+        window.location.reload();
+      } catch (e) {}
+    }
+  };
+  /* 레스토랑 삭제 종료 */
 
   return (
     <div>
@@ -189,26 +220,32 @@ export const MyRestaurant = () => {
           backgroundImage: `url(${data?.myRestaurant.restaurant?.coverImg})`,
         }}
       ></div>
-      <div className=" container mt-10">
+      <div className=" container mt-10 ">
         <h2 className="text-4xl font-medium mb-10">
           {data?.myRestaurant.restaurant?.name || "Loading..."}
         </h2>
-        <Link
-          to={`/restaurant/${id}/add-dish`}
-          className=" mr-8 text-white bg-gray-800 py-3 px-10"
-        >
-          Add Dish &rarr;
-        </Link>
-        {/* <Link to={``} className=" text-white bg-lime-700 py-3 px-10">
-          Buy Promotion &rarr;
-        </Link> */}
-
-        <Link
-          to={`/edit-restaurant/${id}`}
-          className=" text-white bg-lime-700 py-3 px-10"
-        >
-          Edit Restaurant &rarr;
-        </Link>
+        <div className="flex flex-col items-center md:flex-row  md:justify-start">
+          <Link
+            to={`/restaurant/${id}/add-dish`}
+            className=" w-60 text-center mr-8 mb-2 md:mb-0 text-white bg-gray-800 py-3 px-10 md:py-3 md:px-10"
+          >
+            Add Dish &rarr;
+          </Link>
+          <Link
+            to={`/edit-restaurant/${id}`}
+            className=" w-60 text-center mr-8 mb-2 md:mb-0 text-white bg-lime-700 py-3 px-10 md:py-3 md:px-10"
+          >
+            Edit Restaurant &rarr;
+          </Link>
+          <button
+            className=" w-60 text-center mr-8 mb-2 md:mb-0 text-white bg-red-700 py-3 px-10 md:py-3 md:px-10"
+            onClick={() =>
+              restaurantDeleteBtn(data?.myRestaurant.restaurant?.id!)
+            }
+          >
+            Delete Restaurant &rarr;
+          </button>
+        </div>
         <div className="mt-10">
           {data?.myRestaurant.restaurant?.menu.length === 0 ? (
             <h4 className="text-xl mb-5">Please upload a dish!</h4>

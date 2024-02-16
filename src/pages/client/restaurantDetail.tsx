@@ -170,7 +170,10 @@ export const Restaurant = () => {
       createOrder: { orderId },
     } = data;
     if (data.createOrder.ok) {
-      history.push(`/orders/${orderId}`);
+      // history.push(`/orders/${orderId}`);
+      window.open(`/orders/${orderId}`);
+      // closeModal();
+      window.location.reload();
     }
   };
   const [createOrderMutation, { loading: placingOrder }] = useMutation<
@@ -188,17 +191,17 @@ export const Restaurant = () => {
       alert("메뉴가 선택되지 않았습니다.");
       return;
     }
-    const ok = window.confirm("You are about to place an order");
-    if (ok) {
-      createOrderMutation({
-        variables: {
-          input: {
-            restaurantId: +params.id,
-            items: orderItems,
-          },
+    // const ok = window.confirm("주문 하시겠습니까?");
+    // if (ok) {
+    createOrderMutation({
+      variables: {
+        input: {
+          restaurantId: +params.id,
+          items: orderItems,
         },
-      });
-    }
+      },
+    });
+    // }
   };
 
   // 모달 계산식 시작

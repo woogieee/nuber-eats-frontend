@@ -1,8 +1,13 @@
-import { gql, useQuery } from "@apollo/client";
-import { MyRestaurantsQuery } from "../../__generated__/graphql";
+import { gql, useQuery, useSubscription } from "@apollo/client";
+import {
+  MyRestaurantsQuery,
+  PendingOrdersSubscription,
+} from "../../__generated__/graphql";
 import { Helmet } from "react-helmet-async";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import { Restaurant } from "../../components/restaurant";
+import { FULL_ORDER_FRAGMENT } from "../../fragments";
+import { useEffect } from "react";
 
 export const MY_RESTAURANTS_QUERY = gql`
   query myRestaurants {
@@ -23,8 +28,31 @@ export const MY_RESTAURANTS_QUERY = gql`
   }
 `;
 
+const PENDING_ORDERS_SUBSCRIPTION = gql`
+  subscription pendingOrders {
+    pendingOrders {
+      ...FullOrderParts
+    }
+  }
+  ${FULL_ORDER_FRAGMENT}
+`;
+
 export const MyRestaurants = () => {
   const { data } = useQuery<MyRestaurantsQuery>(MY_RESTAURANTS_QUERY);
+
+  const { data: subscriptionData } = useSubscription<PendingOrdersSubscription>(
+    PENDING_ORDERS_SUBSCRIPTION
+  );
+
+  const history = useHistory();
+  useEffect(() => {
+    if (subscriptionData?.pendingOrders.id) {
+      // history.push(`/orders/${subscriptionData.pendingOrders.id}`);
+      window.open(`/orders/${subscriptionData.pendingOrders.id}`, "_blank");
+      // subscriptionData가 있으면 오더 페이지로 보냄
+    }
+  }, [subscriptionData, history]);
+
   return (
     <div>
       <Helmet>
@@ -45,15 +73,18 @@ export const MyRestaurants = () => {
           </>
         ) : (
           <div className="grid mt-16 md:grid-cols-3 gap-x-5 gap-y-10">
-            {data?.myRestaurants.restaurants.map((restaurant) => (
-              <Restaurant
-                key={restaurant.id}
-                id={restaurant.id + ""}
-                coverImg={restaurant.coverImg}
-                name={restaurant.name}
-                categoryName={restaurant.category?.name}
-              />
-            ))}
+            {data?.myRestaurants.restaurants
+              .slice() // 배열 복사
+              .sort((a, b) => a.id - b.id) // ID에 따라 오름차순 정렬
+              .map((restaurant) => (
+                <Restaurant
+                  key={restaurant.id}
+                  id={restaurant.id + ""}
+                  coverImg={restaurant.coverImg}
+                  name={restaurant.name}
+                  categoryName={restaurant.category?.name}
+                />
+              ))}
           </div>
         )}
       </div>
