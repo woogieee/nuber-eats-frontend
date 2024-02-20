@@ -67,8 +67,18 @@ export const AddDish = () => {
       const actualFile = file[0];
       const formBody = new FormData();
       formBody.append("file", actualFile);
+
+      let uploadUrl = "";
+      if (process.env.NODE_ENV === "production") {
+        // 배포 환경
+        uploadUrl = "https://nuber-eats-backend.onrender.com/uploads/";
+      } else {
+        // 로컬 환경
+        uploadUrl = "http://localhost:4000/uploads/";
+      }
+
       const { url: photo } = await (
-        await fetch(`${process.env.FILE_UPLOAD}`, {
+        await fetch(uploadUrl, {
           method: "POST",
           body: formBody,
         })

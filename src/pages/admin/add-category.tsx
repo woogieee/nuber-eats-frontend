@@ -43,7 +43,16 @@ export const AddCategory = () => {
     const formBody = new FormData();
     formBody.append("file", file);
 
-    const response = await fetch(`${process.env.FILE_UPLOAD}`, {
+    let uploadUrl = "";
+    if (process.env.NODE_ENV === "production") {
+      // 배포 환경
+      uploadUrl = "https://nuber-eats-backend.onrender.com/uploads/";
+    } else {
+      // 로컬 환경
+      uploadUrl = "http://localhost:4000/uploads/";
+    }
+
+    const response = await fetch(uploadUrl, {
       method: "POST",
       body: formBody,
     });
