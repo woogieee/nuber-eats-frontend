@@ -54,6 +54,10 @@ export const AddRestaurant = () => {
       const { name, categoryName, address } = getValues();
       setUploading(false);
       const queryResult = client.readQuery({ query: MY_RESTAURANTS_QUERY }); // cache에서 읽음, api로 보내지 않음
+      console.log(queryResult);
+      if (!queryResult) {
+        return;
+      }
       client.writeQuery({
         query: MY_RESTAURANTS_QUERY,
         data: {
@@ -102,8 +106,18 @@ export const AddRestaurant = () => {
       const actualFile = file[0];
       const formBody = new FormData();
       formBody.append("file", actualFile);
+
+      let uploadUrl = "";
+      if (process.env.NODE_ENV === "production") {
+        // 배포 환경
+        uploadUrl = "https://nuber-eats-backend.onrender.com/uploads/";
+      } else {
+        // 로컬 환경
+        uploadUrl = "http://localhost:4000/uploads/";
+      }
+
       const { url: coverImg } = await (
-        await fetch(`${process.env.FILE_UPLOAD}`, {
+        await fetch(uploadUrl, {
           method: "POST",
           body: formBody,
         })
